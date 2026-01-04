@@ -23,6 +23,54 @@ param vmSize string = 'Standard_D2s_v5'
 @description('Create a public IP and attach it to the NIC.')
 param attachPublicIp bool = true
 
+resource nsg 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
+  name: '${vmName}-nsg'
+  location: location
+  properties: {
+    securityRules: [
+      {
+        name: 'Allow-SSH'
+        properties: {
+          priority: 1000
+          direction: 'Inbound'
+          access: 'Allow'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '22'
+          sourceAddressPrefix: 'Internet'
+          destinationAddressPrefix: '*'
+        }
+      }
+      {
+        name: 'Allow-HTTP'
+        properties: {
+          priority: 1001
+          direction: 'Inbound'
+          access: 'Allow'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '80'
+          sourceAddressPrefix: 'Internet'
+          destinationAddressPrefix: '*'
+        }
+      }
+      {
+        name: 'Allow-HTTPS'
+        properties: {
+          priority: 1002
+          direction: 'Inbound'
+          access: 'Allow'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: 'Internet'
+          destinationAddressPrefix: '*'
+        }
+      }
+    ]
+  }
+}
+
 resource pip 'Microsoft.Network/publicIPAddresses@2023-11-01' = if (attachPublicIp) {
   name: '${vmName}-pip'
   location: location
@@ -39,6 +87,9 @@ resource nic 'Microsoft.Network/networkInterfaces@2023-11-01' = {
   name: '${vmName}-nic'
   location: location
   properties: {
+    networkSecurityGroup: {
+      id: nsg.id
+    }
     ipConfigurations: [
       {
         name: 'ipconfig1'

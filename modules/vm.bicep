@@ -14,8 +14,11 @@ param adminUsername string
 @secure()
 param adminPassword string
 
+
+// Standard_D2s_v5 → small moderna
+// Standard_D4s_v5 → reemplazo directo recomendado
 @description('VM size.')
-param vmSize string = 'Standard_DS2_v3'
+param vmSize string = 'Standard_D2s_v5'
 
 @description('Create a public IP and attach it to the NIC.')
 param attachPublicIp bool = true

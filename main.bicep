@@ -13,40 +13,58 @@ param snetInternalCidr string = '192.168.1.32/27'
 param snetACidr string = '192.168.1.128/27'
 param snetBCidr string = '192.168.1.160/27'
 
-resource vnet 'Microsoft.Network/virtualNetworks@2023-11-01' = {
-  name: vnetName
-  location: location
-  properties: {
-    addressSpace: {
-      addressPrefixes: [
-        vnetCidr
-      ]
-    }
-    subnets: [
-      {
-        name: 'snet-external'
-        properties: {
-          addressPrefix: snetExternalCidr
-        }
-      }
-      {
-        name: 'snet-internal'
-        properties: {
-          addressPrefix: snetInternalCidr
-        }
-      }
-      {
-        name: 'snet-a'
-        properties: {
-          addressPrefix: snetACidr
-        }
-      }
-      {
-        name: 'snet-b'
-        properties: {
-          addressPrefix: snetBCidr
-        }
-      }
-    ]
+@description('Admin username for the Ubuntu VMs.')
+param adminUsername string = 'azureuser'
+
+@description('Admin password for the Ubuntu VMs.')
+@secure()
+param adminPassword string
+
+@description('VM name for the instance in snet-a.')
+param vmAName string = 'ubuntu-a'
+
+@description('VM name for the instance in snet-b.')
+param vmBName string = 'ubuntu-b'
+
+module network './modules/network.bicep' = {
+  name: 'network'
+  params: {
+    location: location
+    vnetName: vnetName
+    vnetCidr: vnetCidr
+    snetExternalCidr: snetExternalCidr
+    snetInternalCidr: snetInternalCidr
+    snetACidr: snetACidr
+    snetBCidr: snetBCidr
   }
 }
+
+module vmA './modules/vm.bicep' = {
+  name: 'vmA'
+  params: {
+    location: location
+    vmName: vmAName
+    subnetId: network.outputs.snetAId
+    adminUsername: adminUsername
+    adminPassword: adminPassword
+    attachPublicIp: true
+  }
+}
+
+module vmB './modules/vm.bicep' = {
+  name: 'vmB'
+  params: {
+    location: location
+    vmName: vmBName
+    subnetId: network.outputs.snetBId
+    adminUsername: adminUsername
+    adminPassword: adminPassword
+    attachPublicIp: true
+  }
+}
+
+output vmAId string = vmA.outputs.vmId
+output vmBId string = vmB.outputs.vmId
+output vmAPublicIpId string = vmA.outputs.publicIpId
+output vmBPublicIpId string = vmB.outputs.publicIpId
+output vnetId string = network.outputs.vnetId

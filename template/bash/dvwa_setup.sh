@@ -60,7 +60,13 @@ systemctl start docker
 systemctl enable docker
 
 echo
+echo "Adding current user to docker group..."
+usermod -aG docker $SUDO_USER
+
+echo
 echo "=== Docker Installation Complete ==="
+echo
+echo "Note: You need to log out and log back in (or run 'newgrp docker') for group changes to take effect."
 echo
 
 # Run DVWA container

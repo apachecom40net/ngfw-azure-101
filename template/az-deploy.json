@@ -40,8 +40,7 @@
   "variables": {
     "vmNames": ["linuxssh", "webdvwa"],
     "nsgNames": ["nsg-linuxssh", "nsg-webdvwa"],
-    "nicNames": ["nic-linuxssh", "nic-webdvwa"],
-    "pipNames": ["pip-linuxssh", "pip-webdvwa"]
+    "nicNames": ["nic-linuxssh", "nic-webdvwa"]
   },
   "resources": [
     {
@@ -164,35 +163,13 @@
     },
 
     {
-      "type": "Microsoft.Network/publicIPAddresses",
-      "apiVersion": "2023-09-01",
-      "name": "[variables('pipNames')[0]]",
-      "location": "[parameters('location')]",
-      "sku": { "name": "Standard" },
-      "properties": {
-        "publicIPAllocationMethod": "Static"
-      }
-    },
-    {
-      "type": "Microsoft.Network/publicIPAddresses",
-      "apiVersion": "2023-09-01",
-      "name": "[variables('pipNames')[1]]",
-      "location": "[parameters('location')]",
-      "sku": { "name": "Standard" },
-      "properties": {
-        "publicIPAllocationMethod": "Static"
-      }
-    },
-
-    {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2023-09-01",
       "name": "[variables('nicNames')[0]]",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgNames')[0])]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('pipNames')[0])]"
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgNames')[0])]"
       ],
       "properties": {
         "networkSecurityGroup": {
@@ -203,9 +180,6 @@
             "name": "ipconfig1",
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('pipNames')[0])]"
-              },
               "subnet": {
                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName'))]"
               }
@@ -221,8 +195,7 @@
       "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgNames')[1])]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('pipNames')[1])]"
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgNames')[1])]"
       ],
       "properties": {
         "networkSecurityGroup": {
@@ -233,9 +206,6 @@
             "name": "ipconfig1",
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('pipNames')[1])]"
-              },
               "subnet": {
                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName'))]"
               }
@@ -332,14 +302,6 @@
     "vnetName": {
       "type": "string",
       "value": "[parameters('vnetName')]"
-    },
-    "linuxsshPublicIp": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('pipNames')[0]), '2023-09-01').ipAddress]"
-    },
-    "webdvwaPublicIp": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('pipNames')[1]), '2023-09-01').ipAddress]"
     }
   }
 }
